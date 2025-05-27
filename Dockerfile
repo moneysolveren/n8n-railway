@@ -1,28 +1,36 @@
-FROM n8nio/n8n:latest
+FROM node:18-alpine
 
-# 切換到 root 用戶來安裝套件
-USER root
-
-# 更新套件列表並安裝 curl 和 ffmpeg
-RUN apk update && \
-    apk add --no-cache \
+# 安裝系統依賴
+RUN apk add --no-cache \
     curl \
     ffmpeg \
     wget \
     bash \
-    git
+    git \
+    tini \
+    python3 \
+    make \
+    g++
 
-# 清理快取以減少映像大小
-RUN rm -rf /var/cache/apk/*
+# 安裝 n8n
+RUN npm install -g n8n
 
-# 切換回 n8n 用戶
-USER node
+# 建立非 root 用戶
+RUN addgroup -g 1000 n8n && \
+    adduser -u 1000 -G n8n -s /bin/sh -D n8n
 
-# 設定工作目錄
-WORKDIR /home/node
+# 切換到 n8n 用戶
+USER n8n
+WORKDIR /home/n8n
 
-# 暴露 n8n 默認端口
+# 設定環境變數
+ENV N8N_HOST=0.0.0.0
+ENV N8N_PORT=5678
+ENV N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+
+# 暴露端口
 EXPOSE 5678
 
-# 啟動 n8n
-CMD ["npx", "n8n"]
+# 使用 tini 作為初始化進程
+ENTRYPOINT ["tini", "--"]
+CMD ["n8n"]
