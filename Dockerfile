@@ -25,4 +25,4 @@ WORKDIR /home/node
 EXPOSE 5678
 
 # 啟動 n8n
-CMD ["n8n"]
+CMD ["npx", "n8n"]
