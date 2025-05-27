@@ -17,6 +17,10 @@ RUN mkdir -p /data && \
 
 USER node
 
+# 設定 n8n 使用持久化目錄
 ENV N8N_USER_FOLDER=/data
-VOLUME ["/data"]
+
+# 移除 VOLUME 聲明 - Railway 不支援
+# VOLUME ["/data"]  <-- 刪除這行
+
 EXPOSE 5678
